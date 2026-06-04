@@ -146,5 +146,49 @@ window.DEFAULT_LINKS = [
     description: '網域、DNS、Zero Trust、CDN。',
     tags: ['dns', 'domain', 'security'],
     icon: './assets/icons/cloudflare.svg'
+  },
+  {
+    id: 'api-chickendog-management',
+    name: 'ChickenDog Management',
+    url: 'https://cpa.chickendog.cc/management.html',
+    category: 'API',
+    section: 'Own APIs',
+    sectionOrder: 1,
+    order: 1,
+    description: '自己的 API 管理入口。',
+    tags: ['api', 'own', 'management']
+  },
+  {
+    id: 'api-chickendog-root',
+    name: 'chickendog.cc',
+    url: 'https://chickendog.cc/',
+    category: 'API',
+    section: 'Own APIs',
+    sectionOrder: 1,
+    order: 2,
+    description: '自己的 API / 網域入口。',
+    tags: ['api', 'own', 'domain']
+  },
+  {
+    id: 'api-xumin',
+    name: 'Xumin API',
+    url: 'https://api.xumin.fun/',
+    category: 'API',
+    section: 'Public APIs',
+    sectionOrder: 2,
+    order: 1,
+    description: '外部 API 入口。',
+    tags: ['api', 'public']
+  },
+  {
+    id: 'api-101-37-15-95-9687',
+    name: '101.37.15.95:9687',
+    url: 'http://101.37.15.95:9687/',
+    category: 'API',
+    section: 'Public APIs',
+    sectionOrder: 2,
+    order: 2,
+    description: '外部 API 服務入口。',
+    tags: ['api', 'public', 'server']
   }
 ];

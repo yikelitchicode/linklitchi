@@ -69,9 +69,10 @@ const state = {
 };
 
 function cloneDefaults() {
-  return window.DEFAULT_LINKS.map((item) => ({
+  return window.DEFAULT_LINKS.map((item, index) => ({
     ...item,
     icon: resolveIcon(item),
+    sourceIndex: index,
     tags: Array.isArray(item.tags) ? [...item.tags] : []
   }));
 }
@@ -106,6 +107,10 @@ function filteredLinks() {
   return links.sort((a, b) => compareLinks(a, b, state.sortKey, state.sortDir));
 }
 
+function orderValue(value, fallback = Number.MAX_SAFE_INTEGER) {
+  return Number.isFinite(value) ? value : fallback;
+}
+
 function hostnameOf(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -115,10 +120,16 @@ function hostnameOf(url) {
 }
 
 function compareLinks(a, b, key, dir) {
+  const customOrderDiff = orderValue(a.order) - orderValue(b.order);
+  if (customOrderDiff !== 0) return customOrderDiff;
+
   const modifier = dir === "asc" ? 1 : -1;
   const left = sortableValue(a, key);
   const right = sortableValue(b, key);
-  return left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" }) * modifier;
+  const textDiff = left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" }) * modifier;
+  if (textDiff !== 0) return textDiff;
+
+  return a.sourceIndex - b.sourceIndex;
 }
 
 function sortableValue(item, key) {
@@ -132,6 +143,11 @@ function categoryLabel(category) {
   if (category === "Site") return "Sites";
   if (category === "API") return "APIs";
   return "Links";
+}
+
+function sectionLabel(category, section) {
+  if (category === "API" && section) return section;
+  return categoryLabel(category);
 }
 
 function iconForCategory(category) {
@@ -190,16 +206,31 @@ function renderCards() {
 
   const grouped = new Map();
   links.forEach((item) => {
-    if (!grouped.has(item.category)) grouped.set(item.category, []);
-    grouped.get(item.category).push(item);
+    const key = item.category === "API" ? `${item.category}::${item.section || "APIs"}` : item.category;
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        category: item.category,
+        section: item.section,
+        sectionOrder: item.sectionOrder,
+        sourceIndex: item.sourceIndex,
+        items: []
+      });
+    }
+    grouped.get(key).items.push(item);
   });
 
-  [...grouped.entries()].forEach(([category, items]) => {
+  [...grouped.values()]
+    .sort((a, b) => {
+      const orderDiff = orderValue(a.sectionOrder) - orderValue(b.sectionOrder);
+      if (orderDiff !== 0) return orderDiff;
+      return a.sourceIndex - b.sourceIndex;
+    })
+    .forEach(({ category, section: sectionName, items }) => {
     const sectionNode = els.listSectionTemplate.content.cloneNode(true);
     const section = sectionNode.querySelector(".list-section");
     const list = sectionNode.querySelector(".section-list");
     section.dataset.cols = String(resolveCols());
-    sectionNode.querySelector(".section-title").textContent = categoryLabel(category);
+    sectionNode.querySelector(".section-title").textContent = sectionLabel(category, sectionName);
 
     items.forEach((item) => {
       const node = els.linkCardTemplate.content.cloneNode(true);
@@ -214,7 +245,7 @@ function renderCards() {
     });
 
     els.listView.appendChild(sectionNode);
-  });
+    });
 }
 
 function renderTable() {
