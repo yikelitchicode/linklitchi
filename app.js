@@ -32,12 +32,23 @@ const state = {
   tag: 'all'
 };
 
+function mergeDefaultLinks(existing) {
+  const list = Array.isArray(existing) ? [...existing] : [];
+
+  window.DEFAULT_LINKS.forEach((item) => {
+    const exists = list.some((current) => current.id === item.id || current.url === item.url);
+    if (!exists) list.push(item);
+  });
+
+  return list;
+}
+
 function loadLinks() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [...window.DEFAULT_LINKS];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [...window.DEFAULT_LINKS];
+    return mergeDefaultLinks(parsed);
   } catch {
     return [...window.DEFAULT_LINKS];
   }
