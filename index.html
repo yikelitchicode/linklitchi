@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>linklitchi</title>
+    <meta
+      name="description"
+      content="私人自用 links hub，集中管理 project、tool、site、API 入口。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg"></div>
+    <main class="app-shell">
+      <section class="hero glass">
+        <div>
+          <p class="eyebrow">PRIVATE LINK DASHBOARD</p>
+          <h1>linklitchi</h1>
+          <p class="hero-copy">
+            給自己用的導航頁。把 project、工具、網站、API 入口集中在一個地方。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span>目前連結</span>
+            <strong id="totalCount">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>分類數</span>
+            <strong id="categoryCount">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls glass">
+        <div class="search-row">
+          <input id="searchInput" type="search" placeholder="搜尋名稱、描述、tag..." />
+          <select id="categoryFilter">
+            <option value="all">全部分類</option>
+          </select>
+        </div>
+        <div class="action-row">
+          <button id="addDemoBtn" class="secondary">重置成預設資料</button>
+          <button id="exportBtn" class="secondary">匯出 JSON</button>
+          <label class="import-btn secondary">
+            匯入 JSON
+            <input id="importInput" type="file" accept="application/json" hidden />
+          </label>
+          <button id="openModalBtn">新增連結</button>
+        </div>
+      </section>
+
+      <section class="section-head">
+        <h2>你的入口</h2>
+        <p id="resultMeta">0 筆結果</p>
+      </section>
+
+      <section id="tagFilters" class="tag-filters"></section>
+      <section id="cardGrid" class="card-grid"></section>
+    </main>
+
+    <dialog id="linkModal" class="modal glass">
+      <form id="linkForm" method="dialog">
+        <div class="modal-head">
+          <h3 id="modalTitle">新增連結</h3>
+          <button type="button" id="closeModalBtn" class="icon-btn">✕</button>
+        </div>
+
+        <input type="hidden" id="linkId" />
+
+        <label>
+          名稱
+          <input id="nameInput" required maxlength="80" />
+        </label>
+
+        <label>
+          URL
+          <input id="urlInput" type="url" required placeholder="https://example.com" />
+        </label>
+
+        <label>
+          分類
+          <select id="categoryInput" required>
+            <option value="Project">Project</option>
+            <option value="Tool">Tool</option>
+            <option value="Site">Site</option>
+            <option value="API">API</option>
+          </select>
+        </label>
+
+        <label>
+          描述
+          <textarea id="descriptionInput" rows="3" maxlength="180"></textarea>
+        </label>
+
+        <label>
+          Tags（逗號分隔）
+          <input id="tagsInput" placeholder="work, dashboard, internal" />
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" id="deleteBtn" class="danger ghost hidden">刪除</button>
+          <button type="submit">儲存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="cardTemplate">
+      <article class="card glass">
+        <div class="card-top">
+          <span class="pill category-pill"></span>
+          <button class="icon-btn edit-btn" title="編輯">✎</button>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title"></h3>
+          <p class="card-description"></p>
+        </div>
+        <div class="tag-list"></div>
+        <div class="card-bottom">
+          <a class="open-link" target="_blank" rel="noreferrer">打開</a>
+          <span class="url-preview"></span>
+        </div>
+      </article>
+    </template>
+
+    <script src="./data/default-links.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
