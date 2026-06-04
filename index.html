@@ -11,124 +11,159 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="bg"></div>
-    <main class="app-shell">
-      <section class="hero glass">
-        <div>
-          <p class="eyebrow">PRIVATE LINK DASHBOARD</p>
+    <main class="shell">
+      <section class="hero-shell">
+        <div class="cover-art panel" aria-hidden="true">
+          <img class="cover-image" src="./assets/cover-illustration.png" alt="" />
+        </div>
+        <div class="brand-medallion">
+          <span>LL</span>
+        </div>
+        <div class="hero-copy">
           <h1>linklitchi</h1>
-          <p class="hero-copy">
-            給自己用的導航頁。把 project、工具、網站、API 入口集中在一個地方。
+          <p class="hero-meta">
+            <span id="activeFilterLabel">All</span>
+            <span class="meta-dot"></span>
+            <span id="liveClock">--:--</span>
           </p>
         </div>
-        <div class="hero-stats">
-          <div class="stat-card">
-            <span>目前連結</span>
-            <strong id="totalCount">0</strong>
+      </section>
+
+      <section id="controlShell" class="control-shell panel hidden" aria-label="Search and settings">
+        <div class="control-head">
+          <strong>Search</strong>
+          <button id="controlClose" class="control-close" type="button" aria-label="Close search">✕</button>
+        </div>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search"
+          autocomplete="off"
+          aria-label="搜尋連結"
+        />
+        <div class="mini-stats">
+          <span><strong id="totalCount">0</strong> total</span>
+          <span><strong id="visibleCount">0</strong> visible</span>
+        </div>
+        <div class="display-row" aria-label="欄數切換">
+          <span class="display-label">Layout</span>
+          <div class="display-picker">
+            <button class="display-btn active" type="button" data-cols="1">1</button>
+            <button class="display-btn" type="button" data-cols="2">2</button>
+            <button class="display-btn" type="button" data-cols="3">3</button>
+            <button class="display-btn" type="button" data-cols="4">4</button>
           </div>
-          <div class="stat-card">
-            <span>分類數</span>
-            <strong id="categoryCount">0</strong>
+        </div>
+        <div class="display-row view-row" aria-label="檢視切換">
+          <span class="display-label">View</span>
+          <div class="display-picker view-picker">
+            <button class="display-btn view-btn active" type="button" data-view="list">List</button>
+            <button class="display-btn view-btn" type="button" data-view="table">Table</button>
           </div>
         </div>
       </section>
 
-      <section class="controls glass">
-        <div class="search-row">
-          <input id="searchInput" type="search" placeholder="搜尋名稱、描述、tag..." />
-          <select id="categoryFilter">
-            <option value="all">全部分類</option>
-          </select>
-        </div>
-        <div class="action-row">
-          <button id="addDemoBtn" class="secondary">重置成預設資料</button>
-          <button id="exportBtn" class="secondary">匯出 JSON</button>
-          <label class="import-btn secondary">
-            匯入 JSON
-            <input id="importInput" type="file" accept="application/json" hidden />
-          </label>
-          <button id="openModalBtn">新增連結</button>
+      <section class="content-section">
+        <div id="listView" class="card-grid"></div>
+        <div id="tableView" class="native-table-wrap hidden">
+          <table class="native-table">
+            <thead>
+              <tr>
+                <th scope="col">
+                  <button class="table-sort active" type="button" data-sort-key="name">Name</button>
+                </th>
+                <th scope="col">
+                  <button class="table-sort" type="button" data-sort-key="url">URL</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
         </div>
       </section>
-
-      <section class="section-head">
-        <h2>你的入口</h2>
-        <p id="resultMeta">0 筆結果</p>
-      </section>
-
-      <section id="tagFilters" class="tag-filters"></section>
-      <section id="cardGrid" class="card-grid"></section>
     </main>
 
-    <dialog id="linkModal" class="modal glass">
-      <form id="linkForm" method="dialog">
-        <div class="modal-head">
-          <h3 id="modalTitle">新增連結</h3>
-          <button type="button" id="closeModalBtn" class="icon-btn">✕</button>
+    <nav class="bottom-nav panel" aria-label="分類切換">
+      <button class="nav-btn active" type="button" data-category="all">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        </span>
+        <span>All</span>
+      </button>
+      <button class="nav-btn" type="button" data-category="Project">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5 12 5l5.5 3.5v7L12 19l-5.5-3.5z"/><path d="M12 5v14"/></svg>
+        </span>
+        <span>Project</span>
+      </button>
+      <button class="nav-btn" type="button" data-category="Tool">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6 3.5 3.5-8.5 8.5H6v-3.5z"/><path d="M13 7.5 16.5 11"/></svg>
+        </span>
+        <span>Tool</span>
+      </button>
+      <button class="nav-btn" type="button" data-category="Site">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 0 0 14a7 7 0 0 0 0-14Z"/><path d="M5 12h14M12 5c1.8 2 2.7 4.3 2.7 7S13.8 17 12 19c-1.8-2-2.7-4.3-2.7-7S10.2 7 12 5Z"/></svg>
+        </span>
+        <span>Site</span>
+      </button>
+      <button class="nav-btn" type="button" data-category="API">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h8v8H8z"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/></svg>
+        </span>
+        <span>API</span>
+      </button>
+    </nav>
+
+    <template id="linkCardTemplate">
+      <article class="link-card">
+        <div class="link-card-icon">
+          <span class="icon-glyph"></span>
         </div>
-
-        <input type="hidden" id="linkId" />
-
-        <label>
-          名稱
-          <input id="nameInput" required maxlength="80" />
-        </label>
-
-        <label>
-          URL
-          <input id="urlInput" type="url" required placeholder="https://example.com" />
-        </label>
-
-        <label>
-          分類
-          <select id="categoryInput" required>
-            <option value="Project">Project</option>
-            <option value="Tool">Tool</option>
-            <option value="Site">Site</option>
-            <option value="API">API</option>
-          </select>
-        </label>
-
-        <label>
-          描述
-          <textarea id="descriptionInput" rows="3" maxlength="180"></textarea>
-        </label>
-
-        <label>
-          Tags（逗號分隔）
-          <input id="tagsInput" placeholder="work, dashboard, internal" />
-        </label>
-
-        <div class="modal-actions">
-          <button type="button" id="deleteBtn" class="danger ghost hidden">刪除</button>
-          <button type="submit">儲存</button>
-        </div>
-      </form>
-    </dialog>
-
-    <template id="cardTemplate">
-      <article class="card glass">
-        <div class="card-top">
-          <span class="pill category-pill"></span>
-          <button class="icon-btn edit-btn" title="編輯">✎</button>
-        </div>
-        <div class="card-body">
+        <div class="link-card-main">
           <h3 class="card-title"></h3>
-          <p class="card-description"></p>
+          <span class="link-host"></span>
         </div>
-        <div class="tag-list"></div>
-        <div class="card-bottom">
-          <a class="open-link" target="_blank" rel="noreferrer">打開</a>
-          <span class="url-preview"></span>
+        <div class="link-card-actions">
+          <a class="link-jump" target="_blank" rel="noreferrer" aria-label="Open link">→</a>
         </div>
       </article>
     </template>
+
+    <template id="listSectionTemplate">
+      <section class="list-section">
+        <h2 class="section-title"></h2>
+        <div class="section-list"></div>
+      </section>
+    </template>
+
+    <template id="tableRowTemplate">
+      <tr>
+        <td class="table-name-cell">
+          <a class="table-name-link" target="_blank" rel="noreferrer">
+            <div class="table-name-stack">
+              <strong class="table-title"></strong>
+            </div>
+          </a>
+        </td>
+        <td class="table-url-cell">
+          <button class="table-url-button" type="button">
+            <span class="table-url"></span>
+          </button>
+        </td>
+      </tr>
+    </template>
+
+    <button id="controlToggle" class="control-fab" type="button" aria-expanded="false" aria-controls="controlShell" aria-label="Open search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+    </button>
 
     <script src="./data/default-links.js"></script>
     <script src="./app.js"></script>

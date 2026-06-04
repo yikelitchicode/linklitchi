@@ -1,270 +1,389 @@
-const STORAGE_KEY = 'linklitchi-links-v1';
+const CATEGORY_COLORS = {
+  Project: "project",
+  Tool: "tool",
+  Site: "site",
+  API: "api"
+};
+
+const PROJECT_ICON_POOL = [
+  "./assets/icons/project-airbnb.svg",
+  "./assets/icons/project-behance.svg",
+  "./assets/icons/project-blocks.svg",
+  "./assets/icons/project-discord.svg",
+  "./assets/icons/project-docker.svg",
+  "./assets/icons/project-dropbox.svg",
+  "./assets/icons/project-figma.svg",
+  "./assets/icons/project-firefox.svg",
+  "./assets/icons/project-jira.svg",
+  "./assets/icons/project-linkedin.svg",
+  "./assets/icons/project-netlify.svg",
+  "./assets/icons/project-notion.svg",
+  "./assets/icons/project-orbit.svg",
+  "./assets/icons/project-postman.svg",
+  "./assets/icons/project-rainbow.svg",
+  "./assets/icons/project-reddit.svg",
+  "./assets/icons/project-sketch.svg",
+  "./assets/icons/project-slack.svg",
+  "./assets/icons/project-spark.svg",
+  "./assets/icons/project-spotify.svg",
+  "./assets/icons/project-telegram.svg",
+  "./assets/icons/project-trello.svg",
+  "./assets/icons/project-youtube.svg",
+  "./assets/icons/project-zoom.svg"
+];
+
 const els = {
-  totalCount: document.querySelector('#totalCount'),
-  categoryCount: document.querySelector('#categoryCount'),
-  resultMeta: document.querySelector('#resultMeta'),
-  searchInput: document.querySelector('#searchInput'),
-  categoryFilter: document.querySelector('#categoryFilter'),
-  tagFilters: document.querySelector('#tagFilters'),
-  cardGrid: document.querySelector('#cardGrid'),
-  cardTemplate: document.querySelector('#cardTemplate'),
-  linkModal: document.querySelector('#linkModal'),
-  openModalBtn: document.querySelector('#openModalBtn'),
-  closeModalBtn: document.querySelector('#closeModalBtn'),
-  addDemoBtn: document.querySelector('#addDemoBtn'),
-  exportBtn: document.querySelector('#exportBtn'),
-  importInput: document.querySelector('#importInput'),
-  linkForm: document.querySelector('#linkForm'),
-  modalTitle: document.querySelector('#modalTitle'),
-  deleteBtn: document.querySelector('#deleteBtn'),
-  linkId: document.querySelector('#linkId'),
-  nameInput: document.querySelector('#nameInput'),
-  urlInput: document.querySelector('#urlInput'),
-  categoryInput: document.querySelector('#categoryInput'),
-  descriptionInput: document.querySelector('#descriptionInput'),
-  tagsInput: document.querySelector('#tagsInput')
+  totalCount: document.querySelector("#totalCount"),
+  visibleCount: document.querySelector("#visibleCount"),
+  liveClock: document.querySelector("#liveClock"),
+  activeFilterLabel: document.querySelector("#activeFilterLabel"),
+  controlShell: document.querySelector("#controlShell"),
+  controlToggle: document.querySelector("#controlToggle"),
+  controlClose: document.querySelector("#controlClose"),
+  searchInput: document.querySelector("#searchInput"),
+  tableView: document.querySelector("#tableView"),
+  tableBody: document.querySelector("#tableBody"),
+  listView: document.querySelector("#listView"),
+  navButtons: [...document.querySelectorAll(".nav-btn")],
+  displayButtons: [...document.querySelectorAll(".display-btn[data-cols]")],
+  viewButtons: [...document.querySelectorAll(".view-btn")],
+  sortButtons: [...document.querySelectorAll(".table-sort")],
+  linkCardTemplate: document.querySelector("#linkCardTemplate"),
+  listSectionTemplate: document.querySelector("#listSectionTemplate"),
+  tableRowTemplate: document.querySelector("#tableRowTemplate")
 };
 
 const state = {
-  links: loadLinks(),
-  search: '',
-  category: 'all',
-  tag: 'all'
+  links: cloneDefaults(),
+  search: "",
+  category: "all",
+  cols: 1,
+  view: "list",
+  sortKey: "name",
+  sortDir: "asc",
+  controlsOpen: false
 };
 
-function mergeDefaultLinks(existing) {
-  const list = Array.isArray(existing) ? [...existing] : [];
-
-  window.DEFAULT_LINKS.forEach((item) => {
-    const exists = list.some((current) => current.id === item.id || current.url === item.url);
-    if (!exists) list.push(item);
-  });
-
-  return list;
+function cloneDefaults() {
+  return window.DEFAULT_LINKS.map((item) => ({
+    ...item,
+    icon: resolveIcon(item),
+    tags: Array.isArray(item.tags) ? [...item.tags] : []
+  }));
 }
 
-function loadLinks() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [...window.DEFAULT_LINKS];
-    const parsed = JSON.parse(raw);
-    return mergeDefaultLinks(parsed);
-  } catch {
-    return [...window.DEFAULT_LINKS];
+function resolveIcon(item) {
+  if (item.icon) return item.icon;
+  if (item.category !== "Project") return undefined;
+  return PROJECT_ICON_POOL[stableHash(item.id) % PROJECT_ICON_POOL.length];
+}
+
+function stableHash(value) {
+  return [...String(value)].reduce((acc, char) => ((acc * 31) + char.charCodeAt(0)) >>> 0, 7);
+}
+
+function iconMarkup(item) {
+  if (item.icon) {
+    return `<img class="icon-image" src="${item.icon}" alt="" loading="lazy" decoding="async" />`;
   }
-}
 
-function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.links));
-}
-
-function uniqueCategories() {
-  return [...new Set(state.links.map((item) => item.category))].sort();
-}
-
-function uniqueTags() {
-  return [...new Set(state.links.flatMap((item) => item.tags || []))].sort();
+  return iconForCategory(item.category);
 }
 
 function filteredLinks() {
-  const q = state.search.trim().toLowerCase();
-  return state.links.filter((item) => {
-    const matchesSearch = !q || [item.name, item.description, item.url, ...(item.tags || [])]
-      .join(' ')
-      .toLowerCase()
-      .includes(q);
-    const matchesCategory = state.category === 'all' || item.category === state.category;
-    const matchesTag = state.tag === 'all' || (item.tags || []).includes(state.tag);
-    return matchesSearch && matchesCategory && matchesTag;
+  const query = state.search.trim().toLowerCase();
+  const links = state.links.filter((item) => {
+    const haystack = [item.name, item.url, item.category].join(" ").toLowerCase();
+    const matchesSearch = !query || haystack.includes(query);
+    const matchesCategory = state.category === "all" || item.category === state.category;
+    return matchesSearch && matchesCategory;
   });
+
+  return links.sort((a, b) => compareLinks(a, b, state.sortKey, state.sortDir));
 }
 
-function renderCategoryFilter() {
-  const current = state.category;
-  els.categoryFilter.innerHTML = '<option value="all">全部分類</option>';
-  uniqueCategories().forEach((category) => {
-    const opt = document.createElement('option');
-    opt.value = category;
-    opt.textContent = category;
-    if (category === current) opt.selected = true;
-    els.categoryFilter.appendChild(opt);
-  });
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url.replace(/^https?:\/\//, "").split("/")[0];
+  }
 }
 
-function renderTagFilters() {
-  const tags = ['all', ...uniqueTags()];
-  els.tagFilters.innerHTML = '';
-  tags.forEach((tag) => {
-    const btn = document.createElement('button');
-    btn.className = `pill ${state.tag === tag ? 'active' : ''}`;
-    btn.textContent = tag === 'all' ? '全部標籤' : `#${tag}`;
-    btn.addEventListener('click', () => {
-      state.tag = tag;
-      render();
-    });
-    els.tagFilters.appendChild(btn);
+function compareLinks(a, b, key, dir) {
+  const modifier = dir === "asc" ? 1 : -1;
+  const left = sortableValue(a, key);
+  const right = sortableValue(b, key);
+  return left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" }) * modifier;
+}
+
+function sortableValue(item, key) {
+  if (key === "url") return item.url || "";
+  return item.name || "";
+}
+
+function categoryLabel(category) {
+  if (category === "Project") return "Projects";
+  if (category === "Tool") return "Tools";
+  if (category === "Site") return "Sites";
+  if (category === "API") return "APIs";
+  return "Links";
+}
+
+function iconForCategory(category) {
+  if (category === "Project") {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8.5 12 5l6 3.5v7L12 19l-6-3.5z"/><path d="M12 5v14"/></svg>';
+  }
+  if (category === "Tool") {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6 3.5 3.5-8.5 8.5H6v-3.5z"/><path d="M13 7.5 16.5 11"/></svg>';
+  }
+  if (category === "Site") {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 0 0 14a7 7 0 0 0 0-14Z"/><path d="M5 12h14"/><path d="M12 5c1.8 2 2.7 4.3 2.7 7S13.8 17 12 19c-1.8-2-2.7-4.3-2.7-7S10.2 7 12 5Z"/></svg>';
+  }
+  if (category === "API") {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h8v8H8z"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/></svg>';
+}
+
+function attachCardActions(node, item) {
+  node.querySelector(".link-jump").href = item.url;
+}
+
+function attachTableActions(node, item) {
+  const nameLink = node.querySelector(".table-name-link");
+  const urlButton = node.querySelector(".table-url-button");
+
+  nameLink.href = item.url;
+
+  urlButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(item.url);
+      const urlText = node.querySelector(".table-url");
+      const original = urlText.textContent;
+      urlText.textContent = "Copied";
+      window.setTimeout(() => {
+        urlText.textContent = original;
+      }, 1200);
+    } catch {
+      alert("無法複製網址。");
+    }
   });
 }
 
 function renderCards() {
   const links = filteredLinks();
-  els.cardGrid.innerHTML = '';
+  els.listView.innerHTML = "";
+  els.listView.dataset.cols = String(resolveCols());
 
   if (!links.length) {
-    const empty = document.createElement('div');
-    empty.className = 'empty-state glass';
-    empty.innerHTML = '<strong>找不到結果</strong><p>試試別的關鍵字，或直接新增一筆。</p>';
-    els.cardGrid.appendChild(empty);
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No links";
+    els.listView.appendChild(empty);
+    return;
+  }
+
+  const grouped = new Map();
+  links.forEach((item) => {
+    if (!grouped.has(item.category)) grouped.set(item.category, []);
+    grouped.get(item.category).push(item);
+  });
+
+  [...grouped.entries()].forEach(([category, items]) => {
+    const sectionNode = els.listSectionTemplate.content.cloneNode(true);
+    const section = sectionNode.querySelector(".list-section");
+    const list = sectionNode.querySelector(".section-list");
+    section.dataset.cols = String(resolveCols());
+    sectionNode.querySelector(".section-title").textContent = categoryLabel(category);
+
+    items.forEach((item) => {
+      const node = els.linkCardTemplate.content.cloneNode(true);
+      const card = node.querySelector(".link-card");
+      card.dataset.category = item.category;
+      card.dataset.tone = CATEGORY_COLORS[item.category] || "default";
+      node.querySelector(".icon-glyph").innerHTML = iconMarkup(item);
+      node.querySelector(".card-title").textContent = item.name;
+      node.querySelector(".link-host").textContent = hostnameOf(item.url);
+      attachCardActions(node, item);
+      list.appendChild(node);
+    });
+
+    els.listView.appendChild(sectionNode);
+  });
+}
+
+function renderTable() {
+  const links = filteredLinks();
+  els.tableBody.innerHTML = "";
+
+  if (!links.length) {
+    const row = document.createElement("tr");
+    row.innerHTML = '<td class="table-empty" colspan="2">No links</td>';
+    els.tableBody.appendChild(row);
     return;
   }
 
   links.forEach((item) => {
-    const node = els.cardTemplate.content.cloneNode(true);
-    node.querySelector('.category-pill').textContent = item.category;
-    node.querySelector('.card-title').textContent = item.name;
-    node.querySelector('.card-description').textContent = item.description || '沒有描述';
-    const openLink = node.querySelector('.open-link');
-    openLink.href = item.url;
-    node.querySelector('.url-preview').textContent = item.url.replace(/^https?:\/\//, '');
-
-    const tagList = node.querySelector('.tag-list');
-    (item.tags || []).forEach((tag) => {
-      const span = document.createElement('span');
-      span.className = 'pill';
-      span.textContent = `#${tag}`;
-      tagList.appendChild(span);
-    });
-
-    node.querySelector('.edit-btn').addEventListener('click', () => openModal(item));
-    els.cardGrid.appendChild(node);
+    const node = els.tableRowTemplate.content.cloneNode(true);
+    node.querySelector(".table-title").textContent = item.name;
+    node.querySelector(".table-url").textContent = item.url.replace(/^https?:\/\//, "");
+    attachTableActions(node, item);
+    els.tableBody.appendChild(node);
   });
 }
 
 function updateStats() {
-  const links = filteredLinks();
-  els.totalCount.textContent = state.links.length;
-  els.categoryCount.textContent = uniqueCategories().length;
-  els.resultMeta.textContent = `${links.length} 筆結果`;
+  const visible = filteredLinks();
+  els.totalCount.textContent = String(state.links.length);
+  els.visibleCount.textContent = String(visible.length);
+  els.activeFilterLabel.textContent = state.category === "all" ? "All" : state.category;
+}
+
+function syncNav() {
+  els.navButtons.forEach((button) => {
+    const active = button.dataset.category === state.category;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.dataset.tone = CATEGORY_COLORS[button.dataset.category] || "default";
+  });
+}
+
+function syncCols() {
+  els.displayButtons.forEach((button) => {
+    const active = Number(button.dataset.cols) === state.cols;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.disabled = state.view === "table";
+  });
+}
+
+function resolveCols() {
+  const width = window.innerWidth;
+  if (width <= 560) return Math.min(state.cols, 2);
+  if (width <= 900) return Math.min(state.cols, 3);
+  return state.cols;
+}
+
+function syncView() {
+  els.viewButtons.forEach((button) => {
+    const active = button.dataset.view === state.view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  const isTable = state.view === "table";
+  els.listView.classList.toggle("hidden", isTable);
+  els.tableView.classList.toggle("hidden", !isTable);
+}
+
+function syncSort() {
+  els.sortButtons.forEach((button) => {
+    const active = button.dataset.sortKey === state.sortKey;
+    button.classList.toggle("active", active);
+    button.dataset.dir = active ? state.sortDir : "";
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function syncControls() {
+  els.controlShell.classList.toggle("hidden", !state.controlsOpen);
+  els.controlToggle.setAttribute("aria-expanded", String(state.controlsOpen));
 }
 
 function render() {
-  renderCategoryFilter();
-  renderTagFilters();
   renderCards();
+  renderTable();
   updateStats();
-  persist();
+  syncNav();
+  syncCols();
+  syncView();
+  syncSort();
+  syncControls();
 }
 
-function resetForm() {
-  els.linkForm.reset();
-  els.linkId.value = '';
-  els.categoryInput.value = 'Project';
-  els.deleteBtn.classList.add('hidden');
+function updateClock() {
+  const formatter = new Intl.DateTimeFormat("zh-HK", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  els.liveClock.textContent = formatter.format(new Date());
 }
 
-function openModal(item = null) {
-  if (!item) {
-    resetForm();
-    els.modalTitle.textContent = '新增連結';
-  } else {
-    els.modalTitle.textContent = '編輯連結';
-    els.linkId.value = item.id;
-    els.nameInput.value = item.name;
-    els.urlInput.value = item.url;
-    els.categoryInput.value = item.category;
-    els.descriptionInput.value = item.description || '';
-    els.tagsInput.value = (item.tags || []).join(', ');
-    els.deleteBtn.classList.remove('hidden');
-  }
-  els.linkModal.showModal();
-}
-
-function closeModal() {
-  els.linkModal.close();
-  resetForm();
-}
-
-function saveLink(event) {
-  event.preventDefault();
-  const payload = {
-    id: els.linkId.value || crypto.randomUUID(),
-    name: els.nameInput.value.trim(),
-    url: els.urlInput.value.trim(),
-    category: els.categoryInput.value,
-    description: els.descriptionInput.value.trim(),
-    tags: els.tagsInput.value
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean)
-  };
-
-  const idx = state.links.findIndex((item) => item.id === payload.id);
-  if (idx >= 0) state.links[idx] = payload;
-  else state.links.unshift(payload);
-
-  closeModal();
-  render();
-}
-
-function deleteCurrent() {
-  const id = els.linkId.value;
-  if (!id) return;
-  state.links = state.links.filter((item) => item.id !== id);
-  closeModal();
-  render();
-}
-
-function exportJson() {
-  const blob = new Blob([JSON.stringify(state.links, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'linklitchi-links.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-async function importJson(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (!Array.isArray(data)) throw new Error('invalid');
-    state.links = data;
-    state.search = '';
-    state.category = 'all';
-    state.tag = 'all';
-    els.searchInput.value = '';
+function installEventListeners() {
+  els.searchInput.addEventListener("input", (event) => {
+    state.search = event.target.value;
     render();
-  } catch {
-    alert('JSON 格式不對，匯入失敗。');
-  } finally {
-    event.target.value = '';
-  }
+  });
+
+  els.navButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.category = button.dataset.category;
+      render();
+    });
+  });
+
+  els.displayButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.cols = Number(button.dataset.cols);
+      render();
+    });
+  });
+
+  els.viewButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.view = button.dataset.view;
+      render();
+    });
+  });
+
+  els.controlToggle.addEventListener("click", () => {
+    state.controlsOpen = !state.controlsOpen;
+    render();
+    if (state.controlsOpen) els.searchInput.focus();
+  });
+
+  els.controlClose.addEventListener("click", () => {
+    state.controlsOpen = false;
+    render();
+  });
+
+  els.sortButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextKey = button.dataset.sortKey;
+      if (state.sortKey === nextKey) {
+        state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        state.sortKey = nextKey;
+        state.sortDir = "asc";
+      }
+      render();
+    });
+  });
+
+  window.addEventListener("resize", render);
+
+  document.addEventListener("keydown", (event) => {
+    const isTypingTarget =
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLSelectElement;
+
+    if (event.key === "/" && !isTypingTarget) {
+      event.preventDefault();
+      state.controlsOpen = true;
+      render();
+      els.searchInput.focus();
+    }
+
+    if (event.key === "Escape" && state.controlsOpen) {
+      state.controlsOpen = false;
+      render();
+    }
+  });
 }
 
-els.searchInput.addEventListener('input', (e) => {
-  state.search = e.target.value;
-  render();
-});
-els.categoryFilter.addEventListener('change', (e) => {
-  state.category = e.target.value;
-  render();
-});
-els.openModalBtn.addEventListener('click', () => openModal());
-els.closeModalBtn.addEventListener('click', closeModal);
-els.linkForm.addEventListener('submit', saveLink);
-els.deleteBtn.addEventListener('click', deleteCurrent);
-els.exportBtn.addEventListener('click', exportJson);
-els.importInput.addEventListener('change', importJson);
-els.addDemoBtn.addEventListener('click', () => {
-  state.links = [...window.DEFAULT_LINKS];
-  state.search = '';
-  state.category = 'all';
-  state.tag = 'all';
-  els.searchInput.value = '';
-  render();
-});
-
+installEventListeners();
+updateClock();
+window.setInterval(updateClock, 60000);
 render();

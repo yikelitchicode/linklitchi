@@ -104,14 +104,6 @@ window.DEFAULT_LINKS = [
     tags: ['vercel', 'project', 'tool', 'sports']
   },
   {
-    id: 'project-2026-ea-camp-group-1',
-    name: '2026-ea-camp-group-1',
-    url: 'https://2026-ea-camp-group-1.vercel.app',
-    category: 'Project',
-    description: '2026 EA Camp Group 1 專案。',
-    tags: ['vercel', 'project', '2026']
-  },
-  {
     id: 'project-apymmf-2026-demo',
     name: 'apymmf-2026-demo',
     url: 'https://apymmf-2026-demo.vercel.app',
@@ -125,7 +117,8 @@ window.DEFAULT_LINKS = [
     url: 'https://vercel.com/dashboard',
     category: 'Tool',
     description: '部署與專案管理後台。',
-    tags: ['deploy', 'hosting', 'infra']
+    tags: ['deploy', 'hosting', 'infra'],
+    icon: './assets/icons/vercel.svg'
   },
   {
     id: 'tool-github',
@@ -133,15 +126,8 @@ window.DEFAULT_LINKS = [
     url: 'https://github.com/',
     category: 'Tool',
     description: '程式碼倉庫與版本管理入口。',
-    tags: ['git', 'repo', 'code']
-  },
-  {
-    id: 'api-openai-platform',
-    name: 'OpenAI Platform',
-    url: 'https://platform.openai.com/',
-    category: 'API',
-    description: '模型金鑰、用量、API 文件入口。',
-    tags: ['llm', 'api', 'ai']
+    tags: ['git', 'repo', 'code'],
+    icon: './assets/icons/github.svg'
   },
   {
     id: 'tool-neon-console',
@@ -149,7 +135,8 @@ window.DEFAULT_LINKS = [
     url: 'https://console.neon.tech/',
     category: 'Tool',
     description: 'Postgres / serverless database 管理。',
-    tags: ['postgres', 'db', 'infra']
+    tags: ['postgres', 'db', 'infra'],
+    icon: './assets/icons/neon.svg'
   },
   {
     id: 'tool-cloudflare-dashboard',
@@ -157,6 +144,7 @@ window.DEFAULT_LINKS = [
     url: 'https://dash.cloudflare.com/',
     category: 'Tool',
     description: '網域、DNS、Zero Trust、CDN。',
-    tags: ['dns', 'domain', 'security']
+    tags: ['dns', 'domain', 'security'],
+    icon: './assets/icons/cloudflare.svg'
   }
 ];
