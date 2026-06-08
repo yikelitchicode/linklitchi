@@ -337,8 +337,8 @@ select:focus-visible {
 }
 
 .view-picker {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(220px, 100%);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(320px, 100%);
   margin-left: auto;
 }
 
@@ -551,6 +551,134 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid rgba(64, 51, 119, 0.08);
   box-shadow: 0 10px 20px rgba(95, 86, 175, 0.05);
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px 12px;
+  padding: 20px 12px 10px;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(148, 180, 255, 0.24), rgba(108, 225, 214, 0.12)),
+    rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 18px 34px rgba(86, 116, 205, 0.12);
+  backdrop-filter: blur(24px) saturate(145%);
+}
+
+.app-grid[data-cols="4"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.app-grid[data-cols="6"] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.app-grid[data-cols="7"] {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.app-icon-card {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.app-icon-card:focus-visible .app-icon-tile,
+.app-icon-card:hover .app-icon-tile {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 14px 26px rgba(48, 67, 129, 0.18);
+}
+
+.app-icon-card:focus-visible .app-icon-label,
+.app-icon-card:hover .app-icon-label {
+  color: #101534;
+}
+
+.app-icon-tile {
+  width: 64px;
+  aspect-ratio: 1;
+  max-width: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: 22.37%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(236, 242, 255, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 10px 20px rgba(59, 84, 163, 0.12);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.app-icon-tile .icon-glyph {
+  width: 30px;
+  height: 30px;
+}
+
+.app-icon-tile .icon-glyph svg {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.7;
+}
+
+.app-icon-tile .icon-image {
+  width: 39px;
+  height: 39px;
+}
+
+.app-icon-label {
+  width: 100%;
+  display: block;
+  text-align: center;
+  font-size: 0.68rem;
+  line-height: 1.08;
+  font-weight: 500;
+  color: #32405f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.app-icon-card[data-tone="project"] .app-icon-tile {
+  background: linear-gradient(180deg, #f7f3ff, #e9e4ff);
+}
+
+.app-icon-card[data-tone="project"] .icon-glyph {
+  color: var(--project-fg);
+}
+
+.app-icon-card[data-tone="tool"] .app-icon-tile {
+  background: linear-gradient(180deg, #ecfffa, #d8f8ef);
+}
+
+.app-icon-card[data-tone="tool"] .icon-glyph {
+  color: var(--tool-fg);
+}
+
+.app-icon-card[data-tone="site"] .app-icon-tile {
+  background: linear-gradient(180deg, #fff8e6, #ffefc2);
+}
+
+.app-icon-card[data-tone="site"] .icon-glyph {
+  color: var(--site-fg);
+}
+
+.app-icon-card[data-tone="api"] .app-icon-tile {
+  background: linear-gradient(180deg, #fff1f7, #ffddea);
+}
+
+.app-icon-card[data-tone="api"] .icon-glyph {
+  color: var(--api-fg);
 }
 
 .native-table {
@@ -849,6 +977,22 @@ select:focus-visible {
     padding: 18px 20px;
   }
 
+  .app-grid {
+    gap: 28px 18px;
+    padding: 28px 24px 16px;
+    border-radius: 34px;
+  }
+
+  .app-icon-tile {
+    width: 72px;
+    border-radius: 22.37%;
+  }
+
+  .app-icon-label {
+    font-size: 0.72rem;
+    line-height: 1.1;
+  }
+
   .bottom-nav {
     width: min(calc(100% - 56px), 980px);
     bottom: 24px;
@@ -916,7 +1060,7 @@ select:focus-visible {
   }
 
   .view-picker {
-    width: min(220px, 100%);
+    width: 100%;
     margin-left: 0;
   }
 
@@ -941,6 +1085,38 @@ select:focus-visible {
   .link-card-icon {
     width: 52px;
     height: 52px;
+  }
+
+  .app-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px 8px;
+    padding: 18px 8px 10px;
+    border-radius: 26px;
+  }
+
+  .app-icon-tile {
+    width: 60px;
+    border-radius: 22.37%;
+  }
+
+  .app-icon-tile .icon-glyph {
+    width: 27px;
+    height: 27px;
+  }
+
+  .app-icon-tile .icon-glyph svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  .app-icon-tile .icon-image {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-icon-label {
+    font-size: 0.66rem;
+    line-height: 1.08;
   }
 
   .bottom-nav {

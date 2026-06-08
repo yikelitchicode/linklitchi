@@ -48,13 +48,15 @@ const els = {
   tableView: document.querySelector("#tableView"),
   tableBody: document.querySelector("#tableBody"),
   listView: document.querySelector("#listView"),
+  appView: document.querySelector("#appView"),
   navButtons: [...document.querySelectorAll(".nav-btn")],
   displayButtons: [...document.querySelectorAll(".display-btn[data-cols]")],
   viewButtons: [...document.querySelectorAll(".view-btn")],
   sortButtons: [...document.querySelectorAll(".table-sort")],
   linkCardTemplate: document.querySelector("#linkCardTemplate"),
   listSectionTemplate: document.querySelector("#listSectionTemplate"),
-  tableRowTemplate: document.querySelector("#tableRowTemplate")
+  tableRowTemplate: document.querySelector("#tableRowTemplate"),
+  appIconTemplate: document.querySelector("#appIconTemplate")
 };
 
 const state = {
@@ -170,6 +172,10 @@ function attachCardActions(node, item) {
   node.querySelector(".link-jump").href = item.url;
 }
 
+function attachAppActions(node, item) {
+  node.querySelector(".app-icon-card").href = item.url;
+}
+
 function attachTableActions(node, item) {
   const nameLink = node.querySelector(".table-name-link");
   const urlButton = node.querySelector(".table-url-button");
@@ -268,6 +274,30 @@ function renderTable() {
   });
 }
 
+function renderAppGrid() {
+  const links = filteredLinks();
+  els.appView.innerHTML = "";
+  els.appView.dataset.cols = String(resolveAppCols());
+
+  if (!links.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No apps";
+    els.appView.appendChild(empty);
+    return;
+  }
+
+  links.forEach((item) => {
+    const node = els.appIconTemplate.content.cloneNode(true);
+    const card = node.querySelector(".app-icon-card");
+    card.dataset.tone = CATEGORY_COLORS[item.category] || "default";
+    node.querySelector(".icon-glyph").innerHTML = iconMarkup(item);
+    node.querySelector(".app-icon-label").textContent = item.name;
+    attachAppActions(node, item);
+    els.appView.appendChild(node);
+  });
+}
+
 function updateStats() {
   const visible = filteredLinks();
   els.totalCount.textContent = String(state.links.length);
@@ -300,6 +330,14 @@ function resolveCols() {
   return state.cols;
 }
 
+function resolveAppCols() {
+  const width = window.innerWidth;
+  if (width <= 420) return 4;
+  if (width <= 560) return 4;
+  if (width <= 900) return Math.min(Math.max(state.cols + 1, 4), 6);
+  return Math.min(Math.max(state.cols + 2, 5), 7);
+}
+
 function syncView() {
   els.viewButtons.forEach((button) => {
     const active = button.dataset.view === state.view;
@@ -308,7 +346,9 @@ function syncView() {
   });
 
   const isTable = state.view === "table";
-  els.listView.classList.toggle("hidden", isTable);
+  const isApp = state.view === "app";
+  els.listView.classList.toggle("hidden", isTable || isApp);
+  els.appView.classList.toggle("hidden", !isApp);
   els.tableView.classList.toggle("hidden", !isTable);
 }
 
@@ -328,6 +368,7 @@ function syncControls() {
 
 function render() {
   renderCards();
+  renderAppGrid();
   renderTable();
   updateStats();
   syncNav();
