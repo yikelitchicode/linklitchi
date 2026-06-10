@@ -190,5 +190,27 @@ window.DEFAULT_LINKS = [
     order: 2,
     description: '外部 API 服務入口。',
     tags: ['api', 'public', 'server']
+  },
+  {
+    id: 'api-big-ppxsh',
+    name: 'big.ppxsh.com',
+    url: 'https://big.ppxsh.com/',
+    category: 'API',
+    section: 'Public APIs',
+    sectionOrder: 2,
+    order: 3,
+    description: '外部 API 入口，搭配充值渠道 QN3MH16E 使用。',
+    tags: ['api', 'public', 'ppxsh', 'paired']
+  },
+  {
+    id: 'api-pay-ldxp-qn3mh16e',
+    name: 'QN3MH16E Recharge',
+    url: 'https://pay.ldxp.cn/shop/QN3MH16E',
+    category: 'API',
+    section: 'Public APIs',
+    sectionOrder: 2,
+    order: 4,
+    description: 'big.ppxsh.com 對應的充值渠道。',
+    tags: ['api', 'public', 'recharge', 'ppxsh', 'paired']
   }
 ];
