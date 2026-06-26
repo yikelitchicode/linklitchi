@@ -212,5 +212,16 @@ window.DEFAULT_LINKS = [
     order: 4,
     description: 'big.ppxsh.com 對應的充值渠道。',
     tags: ['api', 'public', 'recharge', 'ppxsh', 'paired']
+  },
+  {
+    id: 'api-suoxie-codes',
+    name: 'suoxie.codes',
+    url: 'https://suoxie.codes',
+    category: 'API',
+    section: 'Public APIs',
+    sectionOrder: 2,
+    order: 5,
+    description: '縮寫 / 縮網址服務入口。',
+    tags: ['api', 'public', 'shortener', 'url']
   }
 ];
