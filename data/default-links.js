@@ -181,9 +181,9 @@ window.DEFAULT_LINKS = [
     tags: ['api', 'public']
   },
   {
-    id: 'api-101-37-15-95-9687',
-    name: '101.37.15.95:9687',
-    url: 'http://101.37.15.95:9687/',
+    id: 'api-ishfca-top',
+    name: 'ishfca.top',
+    url: 'https://ishfca.top/',
     category: 'API',
     section: 'Public APIs',
     sectionOrder: 2,
